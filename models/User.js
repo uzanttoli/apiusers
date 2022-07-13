@@ -38,6 +38,31 @@ class User {
     }
   }
 
+
+  async findByEmail(email) {
+    try {
+      var result = await db
+        .select(["id", "name", "email", "role"])
+        .table("users")
+        .where({ email: email });
+
+      if (result.length > 0) {
+
+        return result[0];
+
+      } else {
+
+        return undefined;
+
+      }
+    } catch (error) {
+        
+      console.log(error);
+      return undefined;
+      
+    }
+  }
+
   async new(email, name, password) {
     try {
       //   var { email, name, password } = user;
@@ -61,6 +86,67 @@ class User {
       }
     } catch (error) {
       return false;
+    }
+  }
+
+
+  async update(id, name, email, role){
+    var user = await this.findById(id);
+
+    if(user != undefined){
+
+      var editUser = {};
+
+      if(email != undefined){
+        if(email != user.email){
+          var result  = await this.findEmail(email);
+          if(result == false){
+            editUser.email = email;
+          }else{
+            return {status: false, err: "O email ja esta cadastrado!"};
+          }
+        }
+      }
+
+      if(name != undefined){
+        editUser.name = name;
+      }
+
+      if(role != undefined){
+        editUser.role = role;
+      }
+
+
+      try {
+        await db.update(editUser).where({id:id}).table("users");
+        return {status: true};
+      } catch (error) {
+        return {status: false, err: error};
+      }
+
+    }else{
+      return {status: false, err: "O usuario nao existe!"}
+    }
+  }
+
+
+  async delete(id){
+    var user =  await this.findById(id);
+
+    if(user != undefined){
+
+      try {
+
+        await db.delete().where({id:id}).table("users");
+        return {status: true};
+
+      } catch (error) {
+
+        return {status: false, err: error};
+
+      }
+    }else{
+      return {status: false, err: "Usuario nao existe!"}
     }
   }
 }
