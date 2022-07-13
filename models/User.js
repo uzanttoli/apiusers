@@ -1,5 +1,6 @@
 var db = require("../database/connection");
 var bcrypt = require("bcrypt");
+const PasswordToken = require("./PasswordToken");
 
 class User {
   async findAll() {
@@ -42,7 +43,7 @@ class User {
   async findByEmail(email) {
     try {
       var result = await db
-        .select(["id", "name", "email", "role"])
+        .select(["id", "name", "password", "email", "role"])
         .table("users")
         .where({ email: email });
 
@@ -148,6 +149,15 @@ class User {
     }else{
       return {status: false, err: "Usuario nao existe!"}
     }
+  }
+
+
+  async changePassword(newPassword, id, token){
+
+    var hash = await bcrypt.hash(newPassword, 10);
+    await db.update({password: hash}).where({id: id}).table("users");
+    await PasswordToken.setUserd(token);
+
   }
 }
 

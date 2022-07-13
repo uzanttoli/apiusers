@@ -30,6 +30,39 @@ class PasswordToken{
         }
     }
 
+
+    async validate(token){
+        try {
+            var result = await db.select("*").where({token: token}).table("passwordtokens");
+            
+            if(result.length > 0){
+
+                var tk = result[0];
+
+                if(tk.used){
+                    return {status: false};
+                }else{
+                    return {status: true, token: tk};
+                }
+
+            }else{
+                return {status: false};
+            }
+
+        } catch (error) {
+            console.log(error);
+            return {status: false};
+        }
+    }
+
+
+    async setUserd(token){
+        await db.update({used: 1}).where({token: token}).table('passwordtokens');
+    }
+
+
+
+    
 }
 
-module.exports = new PasswordToken()
+module.exports = new PasswordToken();
